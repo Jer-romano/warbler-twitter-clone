@@ -5,7 +5,7 @@ from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 
 from forms import UserAddForm, LoginForm, MessageForm, EditUserForm
-from models import db, connect_db, User, Message
+from models import db, connect_db, User, Message, Likes
 
 CURR_USER_KEY = "curr_user"
 
@@ -181,6 +181,17 @@ def users_followers(user_id):
     user = User.query.get_or_404(user_id)
     return render_template('users/followers.html', user=user)
 
+@app.route("/users/<int:user_id>/likes")
+def users_likes(user_id):
+    """Show messages liked by this user"""
+
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    user = User.query.get_or_404(user_id)
+    return render_template("/users/likes.html", user=user,
+                                                messages=user.likes)
 
 @app.route('/users/follow/<int:follow_id>', methods=['POST'])
 def add_follow(follow_id):
@@ -237,6 +248,22 @@ def profile():
     else:
         return render_template("users/edit.html", user=g.user, form=form)
 
+@app.route('/users/add_like/<int:message_id>', methods=['POST'])
+def add_or_remove_like(message_id):
+    """Add or remove like to message and to user's likes"""
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    like_ids = [i.id for i in g.user.likes]
+    if message_id in like_ids:
+        liked_msg = Message.query.get(message_id)
+        g.user.likes.remove(liked_msg)
+    else:
+        new_like = Likes(user_id=g.user.id, message_id=message_id)
+        db.session.add(new_like)
+    db.session.commit()
+    return redirect("/")
 
 @app.route('/users/delete', methods=["POST"])
 def delete_user():
@@ -316,13 +343,19 @@ def homepage():
     """
 
     if g.user:
+        following_ids = [i.id for i in g.user.following]
+        following_ids.append(g.user.id)
         messages = (Message
                     .query
+                    .filter(Message.user_id.in_(following_ids))
                     .order_by(Message.timestamp.desc())
                     .limit(100)
                     .all())
+        likes = [i.id for i in g.user.likes]
+        #own_msg_ids = [i.id for i in g.user.messages]
 
-        return render_template('home.html', messages=messages)
+        return render_template('home.html', messages=messages,
+                                            likes=likes)
 
     else:
         return render_template('home-anon.html')
