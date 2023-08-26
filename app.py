@@ -1,5 +1,4 @@
-import os, sys
-print("\nThe path: ", sys.path, " End of path")
+import os
 from flask import Flask, render_template, request, flash, redirect, session, g
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
@@ -22,6 +21,7 @@ app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = True
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', "it's a secret")
 toolbar = DebugToolbarExtension(app)
 
+app.debug = True
 connect_db(app)
 
 
@@ -324,8 +324,12 @@ def messages_destroy(message_id):
         return redirect("/")
 
     msg = Message.query.get(message_id)
-    db.session.delete(msg)
-    db.session.commit()
+
+    if(msg.user_id == g.user.id):
+        db.session.delete(msg)
+        db.session.commit()
+    else:
+        flash("Access unauthorized.", "danger")
 
     return redirect(f"/users/{g.user.id}")
 
