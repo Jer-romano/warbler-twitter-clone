@@ -265,6 +265,10 @@ nav + .container {
   margin-top: 40px;
 }
 
+#new-message-div {
+  display: none;
+}
+
 #messages .message-link {
   position: absolute;
   top: 0;

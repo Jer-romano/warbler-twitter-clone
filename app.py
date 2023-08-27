@@ -266,23 +266,26 @@ def delete_user():
 # Messages routes:
 
 @check_user
-@app.route('/messages/new', methods=["GET", "POST"])
+@app.route('/messages/new', methods=["POST"])
 def messages_add():
     """Add a message:
 
-    Show form if GET. If valid, update message and redirect to user page.
+    If valid form or JSON data is received, update the message and return a response.
     """
-
     form = MessageForm()
 
-    if form.validate_on_submit():
-        msg = Message(text=form.text.data)
-        g.user.messages.append(msg)
-        db.session.commit()
+    if form.validate():
+        if request.is_json:
+            data = request.get_json()
+            msg = Message(text=data["text"])
+            g.user.messages.append(msg)
+            db.session.commit()
 
-        return redirect(f"/users/{g.user.id}")
+            return jsonify({"message": "Message added successfully"})  # Or any other response
+        # Process HTML form data here if needed
+        return redirect("/")  # Redirect after successful HTML form submission
+    return jsonify({"error": "Invalid data"}), 400  # Bad Request
 
-    return render_template('messages/new.html', form=form)
 
 
 @app.route('/messages/<int:message_id>', methods=["GET"])
@@ -330,9 +333,11 @@ def homepage():
                     .all())
         likes = [i.id for i in g.user.likes]
         #own_msg_ids = [i.id for i in g.user.messages]
+        form = MessageForm()
 
         return render_template('home.html', messages=messages,
-                                            likes=likes)
+                                            likes=likes,
+                                            form=form)
 
     else:
         return render_template('home-anon.html')

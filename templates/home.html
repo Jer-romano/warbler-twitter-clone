@@ -39,6 +39,28 @@
     </aside>
 
     <div class="col-lg-6 col-md-8 col-sm-12">
+      <div class="row justify-content-center" id="new-message-div">
+        <div class="col-md-6">
+          <form method="POST" id="new-message-form">
+            {{ form.csrf_token }}
+            <!-- <script type="text/javascript">
+              axios.defaults.headers.common["X-CSRFToken"] = "{{ form.csrf_token.value }}";
+          </script> -->
+            <div>
+              {% if form.text.errors %}
+                {% for error in form.text.errors %}
+                  <span class="text-danger">
+                {{ error }}
+              </span>
+                {% endfor %}
+              {% endif %}
+              {{ form.text(placeholder="What's happening?", class="form-control",
+               rows="3", id="message-content") }}
+            </div>
+            <button class="btn btn-outline-success btn-block">Add my message!</button>
+          </form>
+        </div>
+      </div>
       <ul class="list-group" id="messages">
         {% for msg in messages %}
           <li class="list-group-item" data-msg-id="{{ msg.id }}">
@@ -68,4 +90,29 @@
     </div>
 
   </div>
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+
+  <!-- <link rel="script" src="/static/script.js"> -->
+  <!-- <script>
+    $(document).ready(function() {
+      $("#new-message").click(function() {
+        $("#new-message-div").toggle();
+      });
+      async function createMessage(evt) {
+        //evt.preventDefault()
+        try {
+            let response = await axios.post(`${BASE_URL}/messages/new`,
+            $("#new-message-form"), { headers: { 'Content-Type': 'application/json'} })
+            .then(function(response) {
+           
+            })
+        } catch(err) {
+            console.error("createMessage function failed: ", err)
+        }
+      }
+      
+      $("#new-message-form").on("submit", createMessage);
+
+    });
+  </script> -->
 {% endblock %}
