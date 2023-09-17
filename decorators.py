@@ -7,7 +7,6 @@ def check_user(func):
         if not g.user:
             flash("Access unauthorized.", "danger")
             return redirect("/")
-        func(*args, **kwargs)
         return func(*args, **kwargs)
 
     return wrapper_check_user

@@ -157,24 +157,25 @@ def users_show(user_id):
                 .all())
     return render_template('users/show.html', user=user, messages=messages)
 
-@check_user
 @app.route('/users/<int:user_id>/following')
+@check_user
 def show_following(user_id):
     """Show list of people this user is following."""
 
     user = User.query.get_or_404(user_id)
     return render_template('users/following.html', user=user)
 
-@check_user
 @app.route('/users/<int:user_id>/followers')
+@check_user
 def users_followers(user_id):
     """Show list of followers of this user."""
 
     user = User.query.get_or_404(user_id)
     return render_template('users/followers.html', user=user)
 
-@check_user
+
 @app.route("/users/<int:user_id>/likes")
+@check_user
 def users_likes(user_id):
     """Show messages liked by this user"""
 
@@ -182,8 +183,8 @@ def users_likes(user_id):
     return render_template("/users/likes.html", user=user,
                                                 messages=user.likes)
 
-@check_user
 @app.route('/users/follow/<int:follow_id>', methods=['POST'])
+@check_user
 def add_follow(follow_id):
     """Add a follow for the currently-logged-in user."""
 
@@ -193,8 +194,8 @@ def add_follow(follow_id):
 
     return redirect(f"/users/{g.user.id}/following")
 
-@check_user
 @app.route('/users/stop-following/<int:follow_id>', methods=['POST'])
+@check_user
 def stop_following(follow_id):
     """Have currently-logged-in-user stop following this user."""
 
@@ -204,8 +205,8 @@ def stop_following(follow_id):
 
     return redirect(f"/users/{g.user.id}/following")
 
-@check_user
 @app.route('/users/profile', methods=["GET", "POST"])
+@check_user
 def profile():
     """Update profile for current user."""
     
@@ -250,8 +251,8 @@ def add_or_remove_like(message_id):
     db.session.commit()
     return jsonify({"action": action}), 200
 
-@check_user
 @app.route('/users/delete', methods=["POST"])
+@check_user
 def delete_user():
     """Delete user."""
     do_logout()
@@ -265,8 +266,8 @@ def delete_user():
 ##############################################################################
 # Messages routes:
 
-@check_user
 @app.route('/messages/new', methods=["POST"])
+@check_user
 def messages_add():
     """Add a message:
 
@@ -295,8 +296,8 @@ def messages_show(message_id):
     msg = Message.query.get(message_id)
     return render_template('messages/show.html', message=msg)
 
-@check_user
 @app.route('/messages/<int:message_id>/delete', methods=["POST"])
+@check_user
 def messages_destroy(message_id):
     """Delete a message."""
     msg = Message.query.get(message_id)
